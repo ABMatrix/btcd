@@ -61,6 +61,15 @@ func btcdMain(serverChan chan<- *server) error {
 	interrupt := interruptListener()
 	defer btcdLog.Info("Shutdown complete")
 
+	btcdLog.Infof("======= %s", cfg.SubClientUrl, cfg.WarnTime, cfg.ConfigVersion)
+	btcdLog.Infof("sgx mode %t",cfg.SgxEnable)
+    if cfg.SgxEnable {
+		register_sgx_2()
+	} else{
+		register_sgx_test()
+		sign_test([]byte {0,1,2,3,4,5})
+	}
+
 	// Show version at startup.
 	btcdLog.Infof("Version %s", version())
 

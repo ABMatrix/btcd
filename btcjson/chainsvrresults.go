@@ -925,3 +925,7 @@ type GetTxSpendingPrevOutResult struct {
 	// spending this output (omitted if unspent).
 	SpendingTxid string `json:"spendingtxid,omitempty"`
 }
+
+type GetSgxPubkeyResult struct {
+	Publickey string `json:"pubkey"`
+}

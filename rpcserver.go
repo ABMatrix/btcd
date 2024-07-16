@@ -187,6 +187,7 @@ var rpcHandlersBeforeInit = map[string]commandHandler{
 	"version":                handleVersion,
 	"testmempoolaccept":      handleTestMempoolAccept,
 	"gettxspendingprevout":   handleGetTxSpendingPrevOut,
+	"getsgxpubkey":    handleGetSgxPubkey,
 }
 
 // list of commands that we recognize, but for which btcd has no support because
@@ -3966,6 +3967,21 @@ func handleGetTxSpendingPrevOut(s *rpcServer, cmd interface{},
 	return results, nil
 }
 
+func handleGetSgxPubkey(s *rpcServer, cmd interface{}, closeChan <-chan struct{}) (interface{}, error) {
+	
+	pubkey, err := getSgxpublickey(1)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := &btcjson.GetSgxPubkeyResult{
+		Publickey: pubkey,
+	}
+
+	return result,nil
+}
+
 // validateFeeRate checks that the fee rate used by transaction doesn't exceed
 // the max fee rate specified.
 func validateFeeRate(feeSats btcutil.Amount, txSize int64,
@@ -4233,6 +4249,7 @@ func parseCmd(request *btcjson.Request) *parsedRPCCmd {
 		method:  request.Method,
 	}
 
+	btcdLog.Infof("parseCmd  Request %s", request.Method)
 	cmd, err := btcjson.UnmarshalCmd(request)
 	if err != nil {
 		// When the error is because the method is not registered,

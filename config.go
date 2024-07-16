@@ -178,6 +178,10 @@ type config struct {
 	Upnp                 bool          `long:"upnp" description:"Use UPnP to map our listening port outside of NAT"`
 	ShowVersion          bool          `short:"V" long:"version" description:"Display version information and exit"`
 	Whitelists           []string      `long:"whitelist" description:"Add an IP network or IP that will not be banned. (eg. 192.168.1.0/24 or ::1)"`
+    SubClientUrl string `long:"subclienturl" short:"s" description:"SubClientUrl" default:"ws://192.168.0.1:9944"`
+	WarnTime uint `long:"warntime" description:"SubClientUrl" default:"20"`
+    ConfigVersion uint `long:"configversion" description:"SubClientUrl" default:"16"`
+    SgxEnable bool `long:"sgxenable" description:"SubClientUrl"`
 	lookup               func(string) ([]net.IP, error)
 	oniondial            func(string, string, time.Duration) (net.Conn, error)
 	dial                 func(string, string, time.Duration) (net.Conn, error)
@@ -445,6 +449,10 @@ func loadConfig() (*config, []string, error) {
 		Generate:             defaultGenerate,
 		TxIndex:              defaultTxIndex,
 		AddrIndex:            defaultAddrIndex,
+		SubClientUrl:         "ws://192.168.0.1:9933",
+		WarnTime: 20,
+		ConfigVersion: 16,
+		SgxEnable: false,
 	}
 
 	// Service options which are only added on Windows.
@@ -463,6 +471,8 @@ func loadConfig() (*config, []string, error) {
 			return nil, nil, err
 		}
 	}
+
+	fmt.Println("=========================",preCfg.SubClientUrl)
 
 	// Show the version and exit if the version flag was specified.
 	appName := filepath.Base(os.Args[0])

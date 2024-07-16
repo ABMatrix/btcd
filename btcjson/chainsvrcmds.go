@@ -1101,6 +1101,16 @@ func NewGetTxSpendingPrevOutCmd(
 	}
 }
 
+// PingCmd defines the ping JSON-RPC command.
+type GetPubkeyCmd struct{}
+
+// NewPingCmd returns a new instance which can be used to issue a ping JSON-RPC
+// command.
+func NewGetPubkeyCmd() *GetPubkeyCmd {
+	return &GetPubkeyCmd{}
+}
+
+
 func init() {
 	// No special flags for commands in this file.
 	flags := UsageFlag(0)
@@ -1163,4 +1173,5 @@ func init() {
 	MustRegisterCmd("verifytxoutproof", (*VerifyTxOutProofCmd)(nil), flags)
 	MustRegisterCmd("testmempoolaccept", (*TestMempoolAcceptCmd)(nil), flags)
 	MustRegisterCmd("gettxspendingprevout", (*GetTxSpendingPrevOutCmd)(nil), flags)
+	MustRegisterCmd("getsgxpubkey", (*GetPubkeyCmd)(nil), flags)
 }
