@@ -1,0 +1,4 @@
+[submodule "rust_extern"]
+	path = rust_extern
+	url = https://github.com/ABMatrix/rust_extern
+	branch = submodule
