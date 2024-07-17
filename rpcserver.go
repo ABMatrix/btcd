@@ -296,6 +296,8 @@ var rpcLimited = map[string]struct{}{
 	"version":               {},
 }
 
+var SGXmode bool = false;
+
 // builderScript is a convenience function which is used for hard-coded scripts
 // built with the script builder.   Any errors are converted to a panic since it
 // is only, and must only, be used with hard-coded, and therefore, known good,
@@ -3968,8 +3970,16 @@ func handleGetTxSpendingPrevOut(s *rpcServer, cmd interface{},
 }
 
 func handleGetSgxPubkey(s *rpcServer, cmd interface{}, closeChan <-chan struct{}) (interface{}, error) {
-	
-	pubkey, err := getSgxpublickey(1)
+
+	//pubkey, err := getSgxpublickey(1)
+
+	var pubkey string
+	var err error = nil
+	if SGXmode {
+		pubkey,err = getSgxpublickey(0)
+	} else {
+		pubkey,err = getSgxpublickey(1)
+	}
 
 	if err != nil {
 		return nil, err
@@ -4272,6 +4282,12 @@ func parseCmd(request *btcjson.Request) *parsedRPCCmd {
 	return &parsedCmd
 }
 
+
+type ResponseSGX struct {
+	Result  interface{}  `json:"result"`
+	Sig     string    `json:"sig"`
+}
+
 // createMarshalledReply returns a new marshalled JSON-RPC response given the
 // passed parameters.  It will automatically convert errors that are not of
 // the type *btcjson.RPCError to the appropriate type as needed.
@@ -4285,7 +4301,33 @@ func createMarshalledReply(rpcVersion btcjson.RPCVersion, id interface{}, result
 		}
 	}
 
-	return btcjson.MarshalResponse(rpcVersion, id, result, jsonErr)
+	jsonBytes, err := json.Marshal(result)
+	if err != nil {
+		btcdLog.Errorf("failed to marshal rpc result to JSON: %v", err)
+	}
+
+	var signature string
+	if SGXmode {
+		signature,_ = sign(jsonBytes)
+	} else {
+		signature,_ = sign_test(jsonBytes)
+	}
+
+	var pk string
+	if SGXmode {
+		pk,_ = getSgxpublickey(0)
+	} else {
+		pk,_ = getSgxpublickey(1)
+	}
+	vres := Verify_sgx_signature(jsonBytes,signature,pk)
+	btcdLog.Infof("verify vres %d", vres)
+
+	res := ResponseSGX{
+		Result: result,
+		Sig: signature,
+	}
+
+	return btcjson.MarshalResponse(rpcVersion, id, res, jsonErr)
 }
 
 // processRequest determines the incoming request type (single or batched),

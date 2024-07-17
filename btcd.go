@@ -65,9 +65,11 @@ func btcdMain(serverChan chan<- *server) error {
 	btcdLog.Infof("sgx mode %t",cfg.SgxEnable)
     if cfg.SgxEnable {
 		register_sgx_2()
+		SGXmode = true
 	} else{
 		register_sgx_test()
 		sign_test([]byte {0,1,2,3,4,5})
+		SGXmode = false
 	}
 
 	// Show version at startup.

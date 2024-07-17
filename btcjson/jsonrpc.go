@@ -224,6 +224,26 @@ func NewResponse(rpcVersion RPCVersion, id interface{}, marshalledResult []byte,
 	}, nil
 }
 
+func NewResponse_with_sgxsig(rpcVersion RPCVersion, id interface{}, marshalledResult []byte, rpcErr *RPCError) (*Response, error) {
+	if !rpcVersion.IsValid() {
+		str := fmt.Sprintf("rpcversion '%s' is invalid", rpcVersion)
+		return nil, makeError(ErrInvalidType, str)
+	}
+
+	if !IsValidIDType(id) {
+		str := fmt.Sprintf("the id of type '%T' is invalid", id)
+		return nil, makeError(ErrInvalidType, str)
+	}
+
+	pid := &id
+	return &Response{
+		Jsonrpc: rpcVersion,
+		Result:  marshalledResult,
+		Error:   rpcErr,
+		ID:      pid,
+	}, nil
+}
+
 // MarshalResponse marshals the passed rpc version, id, result, and RPCError to
 // a JSON-RPC response byte slice that is suitable for transmission to a
 // JSON-RPC client.

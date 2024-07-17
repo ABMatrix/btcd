@@ -22,7 +22,10 @@ func register_sgx_2() {
 		fmt.Println(data)	
 }
 
-func sign(msg []byte) {
+var ErrSign = fmt.Errorf("sgx sign failed" )
+
+
+func sign(msg []byte) (string,error) {
 		// sign response
 		tosign := hex.EncodeToString(msg)
 		str5 := C.CString(tosign)
@@ -30,12 +33,12 @@ func sign(msg []byte) {
 		signed := C.sign_with_device_sgx_key(str5)
 		str := C.GoStringN(signed, 128)
 	
-		decodedBytes, err := hex.DecodeString(str)
+		_, err := hex.DecodeString(str)
 		if err != nil {
 			fmt.Println("Error decoding hex string:", err)
-			return
+			return "",ErrSign
 		}
-		fmt.Println("decoded is ",decodedBytes)
+		return str,nil
 }
 
 
@@ -49,7 +52,7 @@ func register_sgx_test() {
 	fmt.Println(data)	
 }
 
-func sign_test(msg []byte) {
+func sign_test(msg []byte) (string,error) {
 	// sign response
 	tosign := hex.EncodeToString(msg)
 	str5 := C.CString(tosign)
@@ -57,12 +60,12 @@ func sign_test(msg []byte) {
 	signed := C.sign_with_device_sgx_key_test(str5)
 	str := C.GoStringN(signed, 128)
 
-	decodedBytes, err := hex.DecodeString(str)
+	_, err := hex.DecodeString(str)
 	if err != nil {
 		fmt.Println("Error decoding hex string:", err)
-		return
+		return "",ErrSign
 	}
-	fmt.Println("decoded is ",decodedBytes)
+	return str,nil
 }
 
 var ErrNopubkey = fmt.Errorf("mismatch pubkey type " )
@@ -70,14 +73,24 @@ var ErrNopubkey = fmt.Errorf("mismatch pubkey type " )
 func getSgxpublickey(keytype uint8) (string,error) {
 	//get pubkey
 	pubkey := C.getpublickey( C.ushort(keytype))
-	pk_str := C.GoStringN(pubkey, 128)
+	pk_str := C.GoStringN(pubkey, 64)
 
-	decodedBytes_pk, err := hex.DecodeString(pk_str)
-    if err != nil {
-        fmt.Println("Error decoding hex string:", err)
-        return "",ErrNopubkey
-    }
-	fmt.Println("decodedBytes_pk is ",decodedBytes_pk)
+	// decodedBytes_pk, err := hex.DecodeString(pk_str)
+    // if err != nil {
+    //     fmt.Println("Error decoding hex string:", err)
+    //     return "",ErrNopubkey
+    // }
+	// fmt.Println("decodedBytes_pk is ",decodedBytes_pk)
 
-	return string(decodedBytes_pk), nil
+	return string(pk_str), nil
+}
+
+func Verify_sgx_signature(msg []byte, sig string, pk string) uint16{
+
+	msg_hex := hex.EncodeToString(msg)
+	msg_cstring := C.CString(msg_hex)
+
+	verify_result := C.verify_sig_sgx(msg_cstring, C.CString(sig), C.CString(pk))
+	
+	return uint16(verify_result)
 }
