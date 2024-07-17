@@ -297,6 +297,7 @@ var rpcLimited = map[string]struct{}{
 }
 
 var SGXmode bool = false;
+var VerifySignature bool = false;
 
 // builderScript is a convenience function which is used for hard-coded scripts
 // built with the script builder.   Any errors are converted to a panic since it
@@ -3971,8 +3972,6 @@ func handleGetTxSpendingPrevOut(s *rpcServer, cmd interface{},
 
 func handleGetSgxPubkey(s *rpcServer, cmd interface{}, closeChan <-chan struct{}) (interface{}, error) {
 
-	//pubkey, err := getSgxpublickey(1)
-
 	var pubkey string
 	var err error = nil
 	if SGXmode {
@@ -4313,14 +4312,16 @@ func createMarshalledReply(rpcVersion btcjson.RPCVersion, id interface{}, result
 		signature,_ = sign_test(jsonBytes)
 	}
 
-	var pk string
-	if SGXmode {
-		pk,_ = getSgxpublickey(0)
-	} else {
-		pk,_ = getSgxpublickey(1)
+	if VerifySignature {
+		var pk string
+		if SGXmode {
+			pk,_ = getSgxpublickey(0)
+		} else {
+			pk,_ = getSgxpublickey(1)
+		}
+		verifyres := Verify_sgx_signature(jsonBytes,signature,pk)
+		btcdLog.Infof("verify signature result %d", verifyres)
 	}
-	vres := Verify_sgx_signature(jsonBytes,signature,pk)
-	btcdLog.Infof("verify vres %d", vres)
 
 	res := ResponseSGX{
 		Result: result,

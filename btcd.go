@@ -61,10 +61,11 @@ func btcdMain(serverChan chan<- *server) error {
 	interrupt := interruptListener()
 	defer btcdLog.Info("Shutdown complete")
 
-	btcdLog.Infof("======= %s", cfg.SubClientUrl, cfg.WarnTime, cfg.ConfigVersion)
-	btcdLog.Infof("sgx mode %t",cfg.SgxEnable)
+	btcdLog.Infof("register details %s", cfg.SubClientUrl, cfg.WarnTime, cfg.ConfigVersion, cfg.DeviceOwner)
+	VerifySignature = cfg.VerifySig
+	btcdLog.Infof("sgx mode [%t] VerifySignature [%t]",cfg.SgxEnable, VerifySignature)
     if cfg.SgxEnable {
-		register_sgx_2()
+		register_sgx_2(cfg.SubClientUrl, uint64(cfg.WarnTime), uint16(cfg.ConfigVersion), cfg.DeviceOwner)
 		SGXmode = true
 	} else{
 		register_sgx_test()

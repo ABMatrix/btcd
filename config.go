@@ -181,7 +181,9 @@ type config struct {
     SubClientUrl string `long:"subclienturl" short:"s" description:"SubClientUrl" default:"ws://192.168.0.1:9944"`
 	WarnTime uint `long:"warntime" description:"SubClientUrl" default:"20"`
     ConfigVersion uint `long:"configversion" description:"SubClientUrl" default:"16"`
+	DeviceOwner string `long:"deviceowner" description:"your substrate pubkey" default:"0x123456"`
     SgxEnable bool `long:"sgxenable" description:"SubClientUrl"`
+	VerifySig bool `long:"verifysig" description:"For debug usage, Verify Signatrue after sign it"`
 	lookup               func(string) ([]net.IP, error)
 	oniondial            func(string, string, time.Duration) (net.Conn, error)
 	dial                 func(string, string, time.Duration) (net.Conn, error)
@@ -452,7 +454,9 @@ func loadConfig() (*config, []string, error) {
 		SubClientUrl:         "ws://192.168.0.1:9933",
 		WarnTime: 20,
 		ConfigVersion: 16,
+		DeviceOwner: "0x1de6b35193a03490cb6b925d868671bf3fb6d7c6",
 		SgxEnable: false,
+		VerifySig: false,
 	}
 
 	// Service options which are only added on Windows.
