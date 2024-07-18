@@ -7,10 +7,14 @@ git submodule fetch `https://github.com/ABMatrix/rust_extern`:
 ```
 git submudule init && git submudule update
 ```
+or
+```
+git clone --recursive 
+```
 
 ```
-	cd lib/hello && cargo build --release
-	cp lib/hello/target/release/libhello.a lib/
+	cd rust_extern/lib/hello && cargo build --release
+	cp rust_extern/lib/hello/target/release/libhello.a rust_extern/lib/
     go build
 ```
 

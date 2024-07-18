@@ -25,11 +25,12 @@ COPY . ./btcd
 WORKDIR /RUST/btcd/rust_extern/lib/hello
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN occlum-cargo build --release
-RUN cp ./target/release/libhello.a ../libhello.a
+WORKDIR /RUST/btcd/rust_extern
+RUN cp cp lib/hello/target/release/libhello.a lib/libhello.a
 WORKDIR /RUST/btcd
 COPY go build
 RUN cp ./occlum/occlum_build.sh ./occlum_build.sh
-RUN co ./occlum/sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
+RUN cp ./occlum/sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
 RUN chmod +x ./occlum_build.sh && \
     ./occlum_build.sh && \
     cd occlum_instance &&\

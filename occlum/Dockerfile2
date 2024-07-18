@@ -17,7 +17,8 @@ WORKDIR /RUST/btcd/rust_extern/lib/hello
 RUN git config --system core.longpaths true
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN occlum-cargo build --release
-RUN cp ./target/release/libhello.a ../libhello.a
+WORKDIR /RUST/btcd/rust_extern
+RUN cp cp lib/hello/target/release/libhello.a lib/libhello.a
 WORKDIR /RUST/btcd
 COPY go build
 RUN cp ./occlum/occlum_build.sh ./occlum_build.sh
