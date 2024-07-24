@@ -18,17 +18,17 @@ RUN apt-get clean && \
 FROM occlum/occlum:0.30.1-ubuntu20.04 as packager
 WORKDIR /RUST    
 RUN apt update && apt install -y clang
-RUN rustup install nightly-2023-10-31-x86_64-unknown-linux-gnu && \
-    rustup default nightly-2023-10-31-x86_64-unknown-linux-gnu && \
+RUN rustup install nightly-2024-06-25-x86_64-unknown-linux-gnu && \
+    rustup default nightly-2024-06-25-x86_64-unknown-linux-gnu && \
     rustup target add x86_64-unknown-linux-musl
 COPY . ./btcd	
 WORKDIR /RUST/btcd/rust_extern/lib/hello
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN occlum-cargo build --release
-WORKDIR /RUST/btcd/rust_extern
-RUN cp cp lib/hello/target/release/libhello.a lib/libhello.a
 WORKDIR /RUST/btcd
-COPY go build
+RUN cp rust_extern/lib/hello/target/x86_64-unknown-linux-musl/release/libhello.a rust_extern/lib/
+WORKDIR /RUST/btcd
+RUN occlum-go build
 RUN cp ./occlum/occlum_build.sh ./occlum_build.sh
 RUN cp ./occlum/sgx_default_qcnl.conf /etc/sgx_default_qcnl.conf
 RUN chmod +x ./occlum_build.sh && \
@@ -38,7 +38,7 @@ RUN chmod +x ./occlum_build.sh && \
 
 FROM base as deployer
 WORKDIR /root
-COPY --from=packager /RUST/node/occlum_instance/occlum_instance.tar.gz .
+COPY --from=packager /RUST/btcd/occlum_instance/occlum_instance.tar.gz .
 RUN tar -xvzf occlum_instance.tar.gz
 RUN rm occlum_instance.tar.gz
 COPY --from=packager /etc/sgx_default_qcnl.conf /etc

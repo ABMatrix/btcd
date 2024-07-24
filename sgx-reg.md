@@ -20,6 +20,11 @@ git clone --recursive
     go build
 ```
 
+sgx :
+````
+ cp rust_extern/lib/hello/target/x86_64-unknown-linux-musl/release/libhello.a rust_extern/lib/
+````
+
 ## Usage
 
 ### test
