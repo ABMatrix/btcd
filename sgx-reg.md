@@ -13,8 +13,10 @@ git clone --recursive
 ```
 
 ```
-	cd rust_extern/lib/hello && cargo build --release
+	cd rust_extern/lib/hello && cargo build --release  &&\
+	cd ../../../
 	cp rust_extern/lib/hello/target/release/libhello.a rust_extern/lib/
+	rm btcd 
     go build
 ```
 
