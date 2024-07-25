@@ -3599,14 +3599,7 @@ func handleSignMessageWithPrivKey(s *rpcServer, cmd interface{}, closeChan <-cha
 	wire.WriteVarString(&buf, 0, c.Message)
 	messageHash := chainhash.DoubleHashB(buf.Bytes())
 
-	sig, err := ecdsa.SignCompact(wif.PrivKey,
-		messageHash, wif.CompressPubKey)
-	if err != nil {
-		return nil, &btcjson.RPCError{
-			Code:    btcjson.ErrRPCInvalidAddressOrKey,
-			Message: "Sign failed",
-		}
-	}
+	sig := ecdsa.SignCompact(wif.PrivKey, messageHash, wif.CompressPubKey)
 
 	return base64.StdEncoding.EncodeToString(sig), nil
 }
