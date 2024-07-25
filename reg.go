@@ -8,6 +8,7 @@ package main
 import "C"
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"unsafe"
 )
@@ -62,28 +63,15 @@ func sign_test(msg []byte) (string,error) {
 	defer C.free(unsafe.Pointer(str5))
 	signed := C.sign_with_device_sgx_key_test(str5)
 	str := C.GoStringN(signed, 128)
-
-	// _, err := hex.DecodeString(str)
-	// if err != nil {
-	// 	fmt.Println("Error decoding hex string:", err)
-	// 	return "",ErrSign
-	// }
 	return str,nil
 }
 
 var ErrNopubkey = fmt.Errorf("mismatch pubkey type " )
 
 func getSgxpublickey(keytype uint8) (string,error) {
-	//get pubkey
+
 	pubkey := C.getpublickey(C.ushort(keytype))
 	pk_str := C.GoStringN(pubkey, 64)
-
-	// decodedBytes_pk, err := hex.DecodeString(pk_str)
-    // if err != nil {
-    //     fmt.Println("Error decoding hex string:", err)
-    //     return "",ErrNopubkey
-    // }
-	// fmt.Println("decodedBytes_pk is ",decodedBytes_pk)
 
 	return string(pk_str), nil
 }
@@ -97,4 +85,71 @@ func Verify_sgx_signature(msg []byte, sig string, pk string) uint16{
 	verify_result := C.verify_sig_sgx(msg_cstring, C.CString(sig), C.CString(pk))
 	
 	return uint16(verify_result)
+}
+
+type ResponseSGX struct {
+	Result  json.RawMessage  `json:"resp"`
+	Sig     string    `json:"sig"`
+	PK      string    `json:"pubkey"`
+}
+
+
+type tmpResultSGX struct {
+	Result  interface{}  `json:"result"`
+	Sig     string    `json:"sig"`
+}
+
+func convert_to_sgx_result(result []byte) ([]byte, error) {
+
+	jsonBytes, err := JSONRemarshal(result)
+	if err != nil {
+		rpcsLog.Error("JSONRemarshal",err)
+		return nil, err
+	}
+
+	var signature string
+	var pk string
+	var err1 error
+	var err2 error
+	if SGXmode {
+		signature, err1 = sign(jsonBytes)
+		pk, err2 = getSgxpublickey(0)
+
+	} else {
+		signature,err1 = sign_test(jsonBytes)
+		pk, err2 = getSgxpublickey(1)
+
+	}
+
+	if err1 != nil {
+		rpcsLog.Error("sgx sign", err1)
+		return nil, err1
+	}
+
+	if err2 != nil {
+		rpcsLog.Error("sgx pk", err2)
+		return nil, err2
+	}
+
+	if VerifySignature {
+		verifyres := Verify_sgx_signature(jsonBytes,signature,pk)
+		rpcsLog.Infof("verify signature result %d", verifyres)
+	}
+
+	res := ResponseSGX{
+		Result: result,
+		Sig: signature,
+		PK: pk,
+	}
+	
+	return json.Marshal(&res)
+}
+
+func JSONRemarshal(bytes []byte) ([]byte, error) {
+    var ifce interface{}
+    err := json.Unmarshal(bytes, &ifce)
+    if err != nil {
+        return nil, err
+    }
+    return json.Marshal(ifce)
 }

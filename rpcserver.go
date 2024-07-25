@@ -4282,11 +4282,6 @@ func parseCmd(request *btcjson.Request) *parsedRPCCmd {
 }
 
 
-type ResponseSGX struct {
-	Result  interface{}  `json:"result"`
-	Sig     string    `json:"sig"`
-}
-
 // createMarshalledReply returns a new marshalled JSON-RPC response given the
 // passed parameters.  It will automatically convert errors that are not of
 // the type *btcjson.RPCError to the appropriate type as needed.
@@ -4300,35 +4295,36 @@ func createMarshalledReply(rpcVersion btcjson.RPCVersion, id interface{}, result
 		}
 	}
 
-	jsonBytes, err := json.Marshal(result)
-	if err != nil {
-		btcdLog.Errorf("failed to marshal rpc result to JSON: %v", err)
-	}
+	// sgx-aa
+	// jsonBytes, err := json.Marshal(result)
+	// if err != nil {
+	// 	btcdLog.Errorf("failed to marshal rpc result to JSON: %v", err)
+	// }
 
-	var signature string
-	if SGXmode {
-		signature,_ = sign(jsonBytes)
-	} else {
-		signature,_ = sign_test(jsonBytes)
-	}
+	// var signature string
+	// if SGXmode {
+	// 	signature,_ = sign(jsonBytes)
+	// } else {
+	// 	signature,_ = sign_test(jsonBytes)
+	// }
 
-	if VerifySignature {
-		var pk string
-		if SGXmode {
-			pk,_ = getSgxpublickey(0)
-		} else {
-			pk,_ = getSgxpublickey(1)
-		}
-		verifyres := Verify_sgx_signature(jsonBytes,signature,pk)
-		btcdLog.Infof("verify signature result %d", verifyres)
-	}
+	// if VerifySignature {
+	// 	var pk string
+	// 	if SGXmode {
+	// 		pk,_ = getSgxpublickey(0)
+	// 	} else {
+	// 		pk,_ = getSgxpublickey(1)
+	// 	}
+	// 	verifyres := Verify_sgx_signature(jsonBytes,signature,pk)
+	// 	btcdLog.Infof("verify signature result %d", verifyres)
+	// }
 
-	res := ResponseSGX{
-		Result: result,
-		Sig: signature,
-	}
+	// res := tmpResultSGX{
+	// 	Result: result,
+	// 	Sig: signature,
+	// }
 
-	return btcjson.MarshalResponse(rpcVersion, id, res, jsonErr)
+	return btcjson.MarshalResponse(rpcVersion, id, result, jsonErr)
 }
 
 // processRequest determines the incoming request type (single or batched),
@@ -4625,6 +4621,13 @@ func (s *rpcServer) jsonRPCRead(w http.ResponseWriter, r *http.Request, isAdmin 
 		rpcsLog.Error(err)
 		return
 	}
+
+	msg ,err = convert_to_sgx_result(msg)
+	if err != nil {
+		rpcsLog.Error(err)
+		return
+	}
+
 	if _, err := buf.Write(msg); err != nil {
 		rpcsLog.Errorf("Failed to write marshalled reply: %v", err)
 	}
