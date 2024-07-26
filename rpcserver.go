@@ -1214,6 +1214,7 @@ func handleGetBlockChainInfo(s *rpcServer, cmd interface{}, closeChan <-chan str
 		SoftForks: &btcjson.SoftForks{
 			Bip9SoftForks: make(map[string]*btcjson.Bip9SoftForkDescription),
 		},
+		VerificationProgress: 1.0,
 	}
 
 	// Next, populate the response with information describing the current
