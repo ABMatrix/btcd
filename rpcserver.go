@@ -4252,7 +4252,7 @@ func parseCmd(request *btcjson.Request) *parsedRPCCmd {
 		method:  request.Method,
 	}
 
-	btcdLog.Infof("parseCmd  Request %s", request.Method)
+	btcdLog.Tracef("parseCmd  Request %s", request.Method)
 	cmd, err := btcjson.UnmarshalCmd(request)
 	if err != nil {
 		// When the error is because the method is not registered,

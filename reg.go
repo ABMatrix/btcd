@@ -13,14 +13,16 @@ import (
 	"unsafe"
 )
 
-func register_sgx_2(subclienturl string, warntime uint64, configversion uint16, deviceowner string) {
+func register_sgx_2(subclienturl string, warntime uint64, configversion uint16, deviceowner string, watcher_device_id string, reg_type uint16) {
 	// register
 	subclient_url := C.CString(subclienturl)
 	defer C.free(unsafe.Pointer(subclient_url))
 	owner := C.CString(deviceowner)
 	defer C.free(unsafe.Pointer(owner))
+	watcher_device := C.CString(watcher_device_id)
+	defer C.free(unsafe.Pointer(watcher_device))
 
-	data := C.register_sgx_2(subclient_url, C.ulong(warntime), C.ushort(configversion), owner)
+	data := C.register_sgx_2(subclient_url, C.ulong(warntime), C.ushort(configversion), owner, watcher_device, C.ushort(reg_type))
 
 	fmt.Println("register to bool", data)
 }
