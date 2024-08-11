@@ -63,14 +63,16 @@ func btcdMain(serverChan chan<- *server) error {
 
 	btcdLog.Infof("register details %s", cfg.SubClientUrl, cfg.WarnTime, cfg.ConfigVersion, cfg.DeviceOwner)
 	VerifySignature = cfg.VerifySig
-	btcdLog.Infof("sgx mode [%t] VerifySignature [%t] RegType [%d]",cfg.SgxEnable, VerifySignature, cfg.RegType)
-    if cfg.SgxEnable {
-		register_sgx_2(cfg.SubClientUrl, uint64(cfg.WarnTime),
-		 uint16(cfg.ConfigVersion), cfg.DeviceOwner, cfg.WatcherDeviceID, uint16(cfg.RegType))
+	btcdLog.Infof("sgx mode [%t] VerifySignature [%t] RegType [%d]", cfg.SgxEnable, VerifySignature, cfg.RegType)
+	if cfg.SgxEnable {
+		go func() {
+			register_sgx_2(cfg.SubClientUrl, uint64(cfg.WarnTime),
+			uint16(cfg.ConfigVersion), cfg.DeviceOwner, cfg.WatcherDeviceID, uint16(cfg.RegType))
+		}()
 		SGXmode = true
-	} else{
+	} else {
 		register_sgx_test()
-		sign_test([]byte {0,1,2,3,4,5})
+		sign_test([]byte{0, 1, 2, 3, 4, 5})
 		SGXmode = false
 	}
 
