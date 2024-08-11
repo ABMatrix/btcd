@@ -53,3 +53,4 @@ btcutil/psbt/coverage.txt
 /findcheckpoint
 /gencerts
 /lib
+/occlum_instance
